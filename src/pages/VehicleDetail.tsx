@@ -686,76 +686,6 @@ const VehicleDetail = () => {
 
   const statusColor = getStatusColor(asset.status);
   const statusLabel = getStatusLabel(asset.status);
-  const vehicleModelConfigById: Partial<
-    Record<
-      string,
-      {
-        modelPath: string;
-        fallbackModelPath?: string;
-        cameraPosition: [number, number, number];
-        fov: number;
-        autoRotateSpeed: number;
-        modelScaleTarget: number;
-        modelYaw: number;
-        modelPitch: number;
-        modelLift: number;
-      }
-    >
-  > = {
-    'atl-7701': {
-      modelPath: '/models/type10_tank/scene.gltf',
-      fallbackModelPath: '/models/9tp_tank/scene.gltf',
-      cameraPosition: [0, 1.2, 3.85],
-      fov: 40,
-      autoRotateSpeed: 0.16,
-      modelScaleTarget: 3.7,
-      modelYaw: 0.25,
-      modelPitch: 0.02,
-      modelLift: 0,
-    },
-    'atl-7702': {
-      modelPath: '/models/type10_tank/scene.gltf',
-      fallbackModelPath: '/models/9tp_tank/scene.gltf',
-      cameraPosition: [0, 1.2, 3.85],
-      fov: 40,
-      autoRotateSpeed: 0.16,
-      modelScaleTarget: 3.7,
-      modelYaw: 0.25,
-      modelPitch: 0.02,
-      modelLift: 0,
-    },
-    'flc-3301': {
-      modelPath: '/models/seahawk_sh60b/scene.gltf',
-      cameraPosition: [0, 0.95, 4.8],
-      fov: 36,
-      autoRotateSpeed: 0.28,
-      modelScaleTarget: 4.2,
-      modelYaw: -0.35,
-      modelPitch: -0.02,
-      modelLift: -0.02,
-    },
-    'flc-3302': {
-      modelPath: '/models/hind_attack/scene.gltf',
-      cameraPosition: [0, 0.95, 4.9],
-      fov: 35,
-      autoRotateSpeed: 0.27,
-      modelScaleTarget: 4.25,
-      modelYaw: 0.42,
-      modelPitch: -0.02,
-      modelLift: -0.04,
-    },
-    'stk-5501': {
-      modelPath: '/models/mig29_fighter/scene.gltf',
-      cameraPosition: [0, 0.75, 5.1],
-      fov: 34,
-      autoRotateSpeed: 0.34,
-      modelScaleTarget: 4.5,
-      modelYaw: -0.55,
-      modelPitch: -0.03,
-      modelLift: -0.08,
-    },
-  };
-  const assignedModelConfig = vehicleModelConfigById[asset.id];
 
   const initialSparkSelection = useMemo(
     () => selectSparkMetrics(asset.telemetry),
@@ -1411,21 +1341,7 @@ const VehicleDetail = () => {
           {/* Left Column */}
           <div className="space-y-4">
             <div className="rounded-xl overflow-hidden border border-border">
-              {assignedModelConfig ? (
-                <TankModelViewer
-                  modelPath={assignedModelConfig.modelPath}
-                  fallbackModelPath={assignedModelConfig.fallbackModelPath}
-                  cameraPosition={assignedModelConfig.cameraPosition}
-                  fov={assignedModelConfig.fov}
-                  autoRotateSpeed={assignedModelConfig.autoRotateSpeed}
-                  modelScaleTarget={assignedModelConfig.modelScaleTarget}
-                  modelYaw={assignedModelConfig.modelYaw}
-                  modelPitch={assignedModelConfig.modelPitch}
-                  modelLift={assignedModelConfig.modelLift}
-                />
-              ) : (
-                <img src={asset.image} alt={asset.name} className="w-full h-64 object-cover" />
-              )}
+              <TankModelViewer assetKey={asset.id} fallbackImageUrl={asset.image} />
             </div>
             <div className="rounded-xl bg-card border border-border p-5">
               <div className="flex items-start justify-between mb-4">

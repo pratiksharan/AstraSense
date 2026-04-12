@@ -1,0 +1,414 @@
+{
+  "accessors": [
+    {
+      "bufferView": 2,
+      "componentType": 5126,
+      "count": 9711,
+      "max": [
+        33665.9609375,
+        14128.08984375,
+        35541.453125
+      ],
+      "min": [
+        -49901.1171875,
+        -8956.7294921875,
+        -33843.05859375
+      ],
+      "type": "VEC3"
+    },
+    {
+      "bufferView": 2,
+      "byteOffset": 116532,
+      "componentType": 5126,
+      "count": 9711,
+      "max": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "min": [
+        -1.0,
+        -1.0,
+        -1.0
+      ],
+      "type": "VEC3"
+    },
+    {
+      "bufferView": 3,
+      "componentType": 5126,
+      "count": 9711,
+      "max": [
+        1.0,
+        1.0,
+        1.0,
+        1.0
+      ],
+      "min": [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ],
+      "type": "VEC4"
+    },
+    {
+      "bufferView": 1,
+      "componentType": 5126,
+      "count": 9711,
+      "max": [
+        0.9980469942092896,
+        0.998852014541626
+      ],
+      "min": [
+        0.001276999944821,
+        0.0019529999699443579
+      ],
+      "type": "VEC2"
+    },
+    {
+      "bufferView": 0,
+      "componentType": 5125,
+      "count": 24972,
+      "type": "SCALAR"
+    },
+    {
+      "bufferView": 2,
+      "byteOffset": 233064,
+      "componentType": 5126,
+      "count": 132,
+      "max": [
+        1660.0205078125,
+        2823.08642578125,
+        4464.6982421875
+      ],
+      "min": [
+        -3815.4326171875,
+        -3043.98876953125,
+        -4464.6982421875
+      ],
+      "type": "VEC3"
+    },
+    {
+      "bufferView": 2,
+      "byteOffset": 234648,
+      "componentType": 5126,
+      "count": 132,
+      "max": [
+        0.9996543526649475,
+        0.5968709588050842,
+        0.9512277245521545
+      ],
+      "min": [
+        0.23691175878047943,
+        -0.8839703798294067,
+        -0.9515973329544067
+      ],
+      "type": "VEC3"
+    },
+    {
+      "bufferView": 3,
+      "byteOffset": 155376,
+      "componentType": 5126,
+      "count": 132,
+      "max": [
+        1.0,
+        1.0,
+        1.0,
+        1.0
+      ],
+      "min": [
+        1.0,
+        1.0,
+        1.0,
+        1.0
+      ],
+      "type": "VEC4"
+    },
+    {
+      "bufferView": 1,
+      "byteOffset": 77688,
+      "componentType": 5126,
+      "count": 132,
+      "max": [
+        0.9375,
+        0.96527099609375
+      ],
+      "min": [
+        0.03109700046479702,
+        0.042479999363422394
+      ],
+      "type": "VEC2"
+    },
+    {
+      "bufferView": 0,
+      "byteOffset": 99888,
+      "componentType": 5125,
+      "count": 354,
+      "type": "SCALAR"
+    }
+  ],
+  "asset": {
+    "extras": {
+      "author": "BRO (https://sketchfab.com/musawork786)",
+      "license": "CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)",
+      "source": "https://sketchfab.com/3d-models/army-helicopter-e75df7b3603c48af8f7e314e013f841c",
+      "title": "Army Helicopter"
+    },
+    "generator": "Sketchfab-15.33.0",
+    "version": "2.0"
+  },
+  "bufferViews": [
+    {
+      "buffer": 0,
+      "byteLength": 101304,
+      "name": "floatBufferViews",
+      "target": 34963
+    },
+    {
+      "buffer": 0,
+      "byteLength": 78744,
+      "byteOffset": 101304,
+      "byteStride": 8,
+      "name": "floatBufferViews",
+      "target": 34962
+    },
+    {
+      "buffer": 0,
+      "byteLength": 236232,
+      "byteOffset": 180048,
+      "byteStride": 12,
+      "name": "floatBufferViews",
+      "target": 34962
+    },
+    {
+      "buffer": 0,
+      "byteLength": 157488,
+      "byteOffset": 416280,
+      "byteStride": 16,
+      "name": "floatBufferViews",
+      "target": 34962
+    }
+  ],
+  "buffers": [
+    {
+      "byteLength": 573768,
+      "uri": "scene.bin"
+    }
+  ],
+  "extensionsUsed": [
+    "KHR_materials_specular"
+  ],
+  "images": [
+    {
+      "uri": "textures/bo2_mtl_mi8_desert_baseColor.png"
+    }
+  ],
+  "materials": [
+    {
+      "doubleSided": true,
+      "extensions": {
+        "KHR_materials_specular": {
+          "specularColorFactor": [
+            1.0,
+            1.0,
+            1.0
+          ],
+          "specularFactor": 1.0
+        }
+      },
+      "name": "bo2_mtl_mi8_desert",
+      "pbrMetallicRoughness": {
+        "baseColorTexture": {
+          "index": 0
+        },
+        "metallicFactor": 0.4132508408378018,
+        "roughnessFactor": 0.38889312339950294
+      }
+    },
+    {
+      "alphaMode": "BLEND",
+      "doubleSided": true,
+      "name": "Material.001",
+      "pbrMetallicRoughness": {
+        "baseColorFactor": [
+          0.0,
+          0.0,
+          0.0,
+          0.8151531785697329
+        ],
+        "metallicFactor": 0.7907954611314341,
+        "roughnessFactor": 0.0
+      }
+    }
+  ],
+  "meshes": [
+    {
+      "name": "TomMesh_4zdGc_0_bo2_mtl_mi8_desert_0",
+      "primitives": [
+        {
+          "attributes": {
+            "COLOR_0": 2,
+            "NORMAL": 1,
+            "POSITION": 0,
+            "TEXCOORD_0": 3
+          },
+          "indices": 4,
+          "material": 0,
+          "mode": 4
+        }
+      ]
+    },
+    {
+      "name": "TomMesh_4zdGc_1_Material.001_0",
+      "primitives": [
+        {
+          "attributes": {
+            "COLOR_0": 7,
+            "NORMAL": 6,
+            "POSITION": 5,
+            "TEXCOORD_0": 8
+          },
+          "indices": 9,
+          "material": 1,
+          "mode": 4
+        }
+      ]
+    }
+  ],
+  "nodes": [
+    {
+      "children": [
+        1
+      ],
+      "matrix": [
+        1.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        2.220446049250313e-16,
+        -1.0,
+        0.0,
+        0.0,
+        1.0,
+        2.220446049250313e-16,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ],
+      "name": "Sketchfab_model"
+    },
+    {
+      "children": [
+        2
+      ],
+      "matrix": [
+        0.009999999776482582,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.009999999776482582,
+        0.0,
+        0.0,
+        -0.009999999776482582,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ],
+      "name": "Army Helecopter.fbx"
+    },
+    {
+      "children": [
+        3,
+        5
+      ],
+      "name": "RootNode"
+    },
+    {
+      "children": [
+        4
+      ],
+      "matrix": [
+        0.009999999776482582,
+        2.220331650174154e-18,
+        -2.242995339660349e-18,
+        0.0,
+        -2.2429953660740046e-18,
+        0.009999484116275823,
+        -0.00010155263659400366,
+        0.0,
+        2.2203316234908846e-18,
+        0.00010155263659400366,
+        0.009999484116275823,
+        0.0,
+        27.841276168823242,
+        -65.53583526611328,
+        -1.2432843446731567,
+        1.0
+      ],
+      "name": "TomMesh_4zdGc_0"
+    },
+    {
+      "mesh": 0,
+      "name": "TomMesh_4zdGc_0_bo2_mtl_mi8_desert_0"
+    },
+    {
+      "children": [
+        6
+      ],
+      "matrix": [
+        0.009999999776482582,
+        2.220331650174154e-18,
+        -2.242995339660349e-18,
+        0.0,
+        -2.2429953660740046e-18,
+        0.009999484116275823,
+        -0.00010155263659400366,
+        0.0,
+        2.2203316234908846e-18,
+        0.00010155263659400366,
+        0.009999484116275823,
+        0.0,
+        198.8440399169922,
+        -89.12696838378906,
+        1.0793945789337158,
+        1.0
+      ],
+      "name": "TomMesh_4zdGc_1"
+    },
+    {
+      "mesh": 1,
+      "name": "TomMesh_4zdGc_1_Material.001_0"
+    }
+  ],
+  "samplers": [
+    {
+      "magFilter": 9729,
+      "minFilter": 9987,
+      "wrapS": 10497,
+      "wrapT": 10497
+    }
+  ],
+  "scene": 0,
+  "scenes": [
+    {
+      "name": "Sketchfab_Scene",
+      "nodes": [
+        0
+      ]
+    }
+  ],
+  "textures": [
+    {
+      "sampler": 0,
+      "source": 0
+    }
+  ]
+}

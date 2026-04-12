@@ -3,10 +3,15 @@ import { Canvas, ThreeEvent, useFrame, useLoader } from '@react-three/fiber';
 import { Maximize2, Minimize2 } from 'lucide-react';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 import * as THREE from 'three';
+import { AssetModelConfig, getAssetModelConfig } from '@/config/assets';
 
 interface TankModelViewerProps {
-  modelPath: string;
+  assetKey?: string;
+  modelConfig?: AssetModelConfig;
+  fallbackImageUrl?: string;
+  modelPath?: string;
   fallbackModelPath?: string;
+  onReady?: () => void;
   cameraPosition?: [number, number, number];
   fov?: number;
   autoRotateSpeed?: number;
@@ -53,14 +58,19 @@ class ModelErrorBoundary extends React.Component<ModelErrorBoundaryProps, ModelE
 }
 
 const InteractiveModel = ({
-  modelPath,
+  modelPath = '',
   autoRotateSpeed = 0.22,
   modelScaleTarget = 3.55,
   modelYaw = 0,
   modelPitch = 0,
   modelLift = 0,
+  onReady,
 }: TankModelViewerProps) => {
   const gltf = useLoader(GLTFLoader, modelPath);
+
+  useEffect(() => {
+    onReady?.();
+  }, [gltf, onReady]);
 
   const model = useMemo(() => {
     const clone = gltf.scene.clone(true);
@@ -243,6 +253,9 @@ const InteractiveModel = ({
 };
 
 const TankModelViewer = ({
+  assetKey,
+  modelConfig,
+  fallbackImageUrl,
   modelPath,
   fallbackModelPath,
   cameraPosition = [0, 1.25, 3.7],
@@ -255,24 +268,56 @@ const TankModelViewer = ({
 }: TankModelViewerProps) => {
   const containerRef = useRef<HTMLDivElement>(null);
   const [isFullscreen, setIsFullscreen] = useState(false);
-  const [activeModelPath, setActiveModelPath] = useState(modelPath);
+  const resolvedRegistryConfig = useMemo(() => {
+    if (modelConfig) {
+      return modelConfig;
+    }
+
+    return getAssetModelConfig(assetKey);
+  }, [assetKey, modelConfig]);
+
+  const resolvedModelPath = resolvedRegistryConfig?.modelUrl ?? modelPath ?? '';
+  const resolvedFallbackModelPath = resolvedRegistryConfig?.fallbackModelUrl ?? fallbackModelPath;
+  const resolvedHas3DModel = resolvedRegistryConfig?.has3DModel ?? Boolean(resolvedModelPath);
+  const resolvedThumbnailUrl = fallbackImageUrl ?? resolvedRegistryConfig?.thumbnailUrl;
+  const resolvedScale = resolvedRegistryConfig?.scale ?? modelScaleTarget;
+  const resolvedRotationSpeed = resolvedRegistryConfig?.rotationSpeed ?? autoRotateSpeed;
+  const resolvedCameraPosition = resolvedRegistryConfig?.cameraPosition ?? cameraPosition;
+  const resolvedFov = resolvedRegistryConfig?.fov ?? fov;
+  const resolvedModelYaw = resolvedRegistryConfig?.modelYaw ?? modelYaw;
+  const resolvedModelPitch = resolvedRegistryConfig?.modelPitch ?? modelPitch;
+  const resolvedModelLift = resolvedRegistryConfig?.modelLift ?? modelLift;
+
+  const [activeModelPath, setActiveModelPath] = useState(resolvedModelPath);
   const [usedFallback, setUsedFallback] = useState(false);
   const [modelError, setModelError] = useState<string | null>(null);
+  const [isLoadingModel, setIsLoadingModel] = useState(Boolean(resolvedModelPath));
+  const [showImageFallback, setShowImageFallback] = useState(false);
 
   useEffect(() => {
-    setActiveModelPath(modelPath);
+    setActiveModelPath(resolvedModelPath);
     setUsedFallback(false);
     setModelError(null);
-  }, [modelPath, fallbackModelPath]);
+    setShowImageFallback(!resolvedHas3DModel || !resolvedModelPath);
+    setIsLoadingModel(Boolean(resolvedHas3DModel && resolvedModelPath));
+  }, [resolvedHas3DModel, resolvedModelPath, resolvedFallbackModelPath]);
+
+  const handleModelReady = () => {
+    setIsLoadingModel(false);
+    setModelError(null);
+  };
 
   const handleModelError = () => {
-    if (!usedFallback && fallbackModelPath) {
+    if (!usedFallback && resolvedFallbackModelPath) {
       setUsedFallback(true);
-      setActiveModelPath(fallbackModelPath);
+      setActiveModelPath(resolvedFallbackModelPath);
+      setIsLoadingModel(true);
       setModelError('Primary model failed to load. Switched to backup model.');
       return;
     }
 
+    setShowImageFallback(Boolean(resolvedThumbnailUrl));
+    setIsLoadingModel(false);
     setModelError('Unable to load this 3D model.');
   };
 
@@ -300,6 +345,38 @@ const TankModelViewer = ({
     await containerRef.current.requestFullscreen();
   };
 
+  if (showImageFallback) {
+    return (
+      <div
+        ref={containerRef}
+        className={`relative w-full overflow-hidden bg-surface-overlay ${
+          isFullscreen ? 'h-screen rounded-none border-0' : 'h-64 md:h-72 rounded-2xl border border-primary/25'
+        }`}
+      >
+        {resolvedThumbnailUrl ? (
+          <img src={resolvedThumbnailUrl} alt={resolvedRegistryConfig?.label ?? assetKey ?? 'asset image'} className="w-full h-full object-cover" />
+        ) : (
+          <div className="w-full h-full flex items-center justify-center bg-secondary/20">
+            <p className="text-sm text-muted-foreground">No 3D model configured for this asset.</p>
+          </div>
+        )}
+        <button
+          type="button"
+          onClick={toggleFullscreen}
+          aria-label={isFullscreen ? 'Exit fullscreen' : 'Enter fullscreen'}
+          className="absolute top-3 right-3 z-20 inline-flex items-center justify-center rounded-md border border-border/70 bg-background/70 p-2 text-foreground hover:bg-background/90 transition-colors"
+        >
+          {isFullscreen ? <Minimize2 className="w-3.5 h-3.5" /> : <Maximize2 className="w-3.5 h-3.5" />}
+        </button>
+        {modelError && (
+          <div className="absolute left-2 right-2 top-2 z-20 rounded-md border border-amber-500/40 bg-amber-950/50 px-2 py-1.5">
+            <p className="text-[11px] text-amber-100 text-center">{modelError}</p>
+          </div>
+        )}
+      </div>
+    );
+  }
+
   return (
     <div
       ref={containerRef}
@@ -326,7 +403,7 @@ const TankModelViewer = ({
       >
         {isFullscreen ? <Minimize2 className="w-3.5 h-3.5" /> : <Maximize2 className="w-3.5 h-3.5" />}
       </button>
-      <Canvas camera={{ position: cameraPosition, fov }} dpr={[1, 1.5]}>
+      <Canvas camera={{ position: resolvedCameraPosition, fov: resolvedFov }} dpr={[1, 1.5]}>
         <ambientLight intensity={0.65} />
         <hemisphereLight intensity={0.45} color="#ffffff" groundColor="#1a1f2a" />
         <directionalLight position={[4, 6, 5]} intensity={1.1} />
@@ -335,15 +412,21 @@ const TankModelViewer = ({
           <Suspense fallback={null}>
             <InteractiveModel
               modelPath={activeModelPath}
-              autoRotateSpeed={autoRotateSpeed}
-              modelScaleTarget={modelScaleTarget}
-              modelYaw={modelYaw}
-              modelPitch={modelPitch}
-              modelLift={modelLift}
+              autoRotateSpeed={resolvedRotationSpeed}
+              modelScaleTarget={resolvedScale}
+              modelYaw={resolvedModelYaw}
+              modelPitch={resolvedModelPitch}
+              modelLift={resolvedModelLift}
+              onReady={handleModelReady}
             />
           </Suspense>
         </ModelErrorBoundary>
       </Canvas>
+      {isLoadingModel && (
+        <div className="absolute inset-0 z-20 flex items-center justify-center bg-background/30 backdrop-blur-[1px]">
+          <p className="text-xs font-medium text-foreground/90">Loading 3D model...</p>
+        </div>
+      )}
       {modelError && (
         <div className="absolute left-2 right-2 top-2 z-20 rounded-md border border-amber-500/40 bg-amber-950/50 px-2 py-1.5">
           <p className="text-[11px] text-amber-100 text-center">{modelError}</p>

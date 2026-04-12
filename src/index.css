@@ -1,0 +1,120 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 220 20% 7%;
+    --foreground: 210 20% 92%;
+
+    --card: 220 18% 10%;
+    --card-foreground: 210 20% 92%;
+
+    --popover: 220 18% 10%;
+    --popover-foreground: 210 20% 92%;
+
+    --primary: 160 84% 39%;
+    --primary-foreground: 220 20% 7%;
+
+    --secondary: 220 16% 14%;
+    --secondary-foreground: 210 15% 75%;
+
+    --muted: 220 14% 16%;
+    --muted-foreground: 215 12% 50%;
+
+    --accent: 220 16% 14%;
+    --accent-foreground: 210 15% 75%;
+
+    --destructive: 0 72% 51%;
+    --destructive-foreground: 0 0% 100%;
+
+    --warning: 38 92% 50%;
+    --warning-foreground: 220 20% 7%;
+
+    --border: 220 13% 16%;
+    --input: 220 13% 16%;
+    --ring: 160 84% 39%;
+
+    --radius: 0.5rem;
+
+    --sidebar-background: 220 18% 8%;
+    --sidebar-foreground: 210 15% 75%;
+    --sidebar-primary: 160 84% 39%;
+    --sidebar-primary-foreground: 220 20% 7%;
+    --sidebar-accent: 220 16% 14%;
+    --sidebar-accent-foreground: 210 15% 75%;
+    --sidebar-border: 220 13% 16%;
+    --sidebar-ring: 160 84% 39%;
+
+    /* Custom tokens */
+    --surface-elevated: 220 17% 12%;
+    --surface-overlay: 220 18% 9%;
+    --text-primary: 210 20% 92%;
+    --text-secondary: 215 12% 58%;
+    --text-tertiary: 215 10% 40%;
+    --status-normal: 160 84% 39%;
+    --status-warning: 38 92% 50%;
+    --status-critical: 0 72% 51%;
+    --chart-line: 160 70% 45%;
+    --chart-area: 160 70% 45%;
+    --chart-grid: 220 13% 18%;
+    --glow-primary: 0 0% 0% / 0;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground antialiased;
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  }
+
+  .font-mono {
+    font-family: 'JetBrains Mono', 'SF Mono', monospace;
+  }
+}
+
+@layer utilities {
+  .text-status-normal {
+    color: hsl(var(--status-normal));
+  }
+  .text-status-warning {
+    color: hsl(var(--status-warning));
+  }
+  .text-status-critical {
+    color: hsl(var(--status-critical));
+  }
+  .bg-status-normal {
+    background-color: hsl(var(--status-normal));
+  }
+  .bg-status-warning {
+    background-color: hsl(var(--status-warning));
+  }
+  .bg-status-critical {
+    background-color: hsl(var(--status-critical));
+  }
+  .bg-surface-elevated {
+    background-color: hsl(var(--surface-elevated));
+  }
+  .bg-surface-overlay {
+    background-color: hsl(var(--surface-overlay));
+  }
+  .text-secondary-content {
+    color: hsl(var(--text-secondary));
+  }
+  .text-tertiary-content {
+    color: hsl(var(--text-tertiary));
+  }
+  .border-subtle {
+    border-color: hsl(var(--border));
+  }
+}

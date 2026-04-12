@@ -1,83 +1,101 @@
-# AstraSense Command
+# AstraSense
 
-## Local Development
+**AstraSense is a fleet intelligence and machine-condition monitoring system for defense-style vehicles. It helps operators assess readiness, detect anomalies, and inspect individual assets through a structured diagnostic interface.**
 
-1. Install dependencies:
+## What it does
+
+AstraSense combines **fleet-level monitoring** with **per-vehicle diagnostics**.
+
+It helps answer:
+- Which assets are ready to deploy?
+- Which vehicles need attention?
+- Where are anomalies emerging?
+- What changed from normal baseline behavior?
+- What should be done next?
+
+## Why it’s different
+
+AstraSense is not just a dashboard.
+
+It combines:
+
+- **Fleet Intelligence** — alerts, readiness, and fleet trend visibility
+- **Mission Readiness** — deploy ready, caution, or grounded states
+- **Anomaly Score** — deviation from expected operator and machine behavior
+- **Vehicle Dossier** — telemetry, timeline, diagnostic summary, and recommended actions for a single asset
+
+## Core Features
+
+### Fleet Overview
+- fleet-wide monitoring
+- readiness and anomaly trend visualization
+- separate critical and anomaly alerts
+- mission readiness summary
+- filtering and sorting by asset type and state
+- 15-asset fleet including tanks, jets, helicopters, APCs, MRAPs, UAVs, and support vehicles
+
+### Vehicle Detail / Diagnostics
+- hero asset view with 3D support where applicable
+- identity and status panel
+- diagnostic summary
+- baseline vs current telemetry comparison
+- anomaly score module
+- incident timeline
+- recommended actions
+
+## Tech Stack
+
+- **React**
+- **TypeScript**
+- **Vite**
+- **Three.js-based 3D rendering**
+- **xAI Grok API**
+- **Render**
+- **GitHub**
+
+## How it works
+
+1. Fleet status is surfaced through alerts, readiness, and trend views  
+2. Asset anomalies are derived from deviations in expected operator and machine behavior  
+3. Each vehicle can be opened into a detailed diagnostics view  
+4. The analysis layer helps translate system state into operator-facing diagnostic insight  
+
+## Why it works for a hackathon
+
+AstraSense stands out because it combines:
+- strong product identity
+- realistic monitoring logic
+- a polished UI
+- a clear flow from fleet overview to asset-level intelligence
+
+It is designed to be easy to understand quickly while still feeling technically thoughtful.
+
+## Local Setup
+
+### Prerequisites
+- Node.js 18+
+- npm
+
+### Run locally
 
 ```bash
+git clone https://github.com/pratiksharan/AstraSense.git
+cd AstraSense
 npm install
+npm run dev
 ```
 
-2. Copy env template:
+### Build
 
 ```bash
-copy .env.example .env
+npm run build
+npm run preview
 ```
 
-Set these values in `.env`:
+## Deployment
 
-- `AI_PROVIDER=auto` (or explicitly `xai` / `grok`).
-- `GROQ_API_KEY=...` or `GROK_API_KEY=...` from your provider account.
-- `AI_MODEL=...` optional model override (provider-specific model id).
-- `AI_PROXY_PORT=8787`.
+AstraSense is deployed on **Render** and versioned through **GitHub**.
 
-Provider routing:
-- `gsk_...` keys route to Groq (`api.groq.com`).
-- non-`gsk_` keys route to xAI (`api.x.ai`).
+## Note
 
-Important: both are real online API calls and may require credits depending on your account tier.
-
-3. Run app + AI proxy together:
-
-```bash
-npm run dev:full
-```
-
-- Frontend runs on `http://localhost:8080`
-- AI proxy runs on `http://localhost:8787`
-
-## AI Integration (Online)
-
-The app includes a server-side AI proxy at `server/ai-proxy.mjs`.
-
-- Frontend calls `/api/ai/diagnostics`
-- Vite proxies `/api` to the local AI backend during development
-- Grok API key stays server-side (never exposed in browser code)
-
-On the Vehicle Detail page, use **Run AI Analysis** in the **AstraSense AI Copilot** panel to generate:
-
-- What changed
-- Why it matters
-- Likely causes (hypothesis)
-- Ranked next actions
-- Confidence score
-
-## Render Deployment (Single Service, Free)
-
-This repo is configured to deploy as one Render web service:
-
-- `npm run build` builds the Vite frontend to `dist`.
-- `npm start` runs `server/ai-proxy.mjs`.
-- The backend serves `/api/*` and also serves static files from `dist`.
-- SPA fallback is enabled so deep links like `/vehicle/:id` work on refresh.
-
-### Render settings
-
-- Build command: `npm install; npm run build`
-- Start command: `npm start`
-- Health check path: `/api/health`
-
-### Required Render environment variables
-
-- `AI_PROVIDER=auto` (or `grok` / `xai`)
-- `GROQ_API_KEY` (or `GROK_API_KEY`)
-
-### Optional Render environment variables
-
-- `GROQ_MODEL` (example: `llama-3.1-8b-instant`)
-- `AI_MODEL` (overrides model selection if set)
-
-Notes:
-
-- Do not set `PORT` on Render manually unless you need to override; Render injects it automatically.
-- Frontend API calls use same-origin `/api/*`, so no separate proxy service is required in production.
+AstraSense uses bounded synthetic/demo telemetry to simulate believable fleet conditions, sparse anomaly activity, and realistic readiness shifts. It is built as a decision-support prototype.

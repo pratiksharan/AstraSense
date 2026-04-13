@@ -201,6 +201,23 @@ function normalizeAiOutput(parsed, fallback) {
   };
 }
 
+function ensureFixFocusedAction(output, appearsNominal) {
+  if (!output || typeof output !== "object") {
+    return output;
+  }
+
+  const action = asString(output.recommendedAction);
+  if (action) {
+    return output;
+  }
+
+  output.recommendedAction = appearsNominal
+    ? "No repair is required now. Keep monitoring and re-check this asset in the next telemetry window."
+    : "Prioritize subsystem checks on highest-drift metrics, perform corrective maintenance, and rerun diagnostics.";
+
+  return output;
+}
+
 app.get("/api/health", (_req, res) => {
   res.json({ ok: true, service: "AstraSense unified web+api", hasBuiltFrontend });
 });
@@ -232,6 +249,8 @@ app.post("/api/ai/diagnostics", async (req, res) => {
     "summary, whyDetected, likelyCause, confidence, recommendedAction.",
     "confidence must be a number from 0 to 100.",
     "Keep wording concise, operational, and evidence-based.",
+    "You have flexibility in phrasing and reasoning as long as it is grounded in payload data.",
+    "Answer the operator's exact question directly in summary.",
     "If operator prompt is action-focused, recommendedAction must be concrete and specific, not generic.",
     "When system appears nominal, still give practical next-step checks instead of only saying continue monitoring.",
   ].join(" ");
@@ -261,8 +280,9 @@ app.post("/api/ai/diagnostics", async (req, res) => {
       },
       body: JSON.stringify({
         model,
-        temperature: 0.2,
-        max_tokens: 500,
+        temperature: 0.45,
+        top_p: 0.9,
+        max_tokens: 700,
         response_format: { type: "json_object" },
         messages: [
           { role: "system", content: systemPrompt },
@@ -289,18 +309,8 @@ app.post("/api/ai/diagnostics", async (req, res) => {
 
     const normalized = normalizeAiOutput(parsedContent, fallback);
 
-    if (fixFocused && appearsNominal) {
-      normalized.summary = "No fault is currently detected, so there is nothing to repair right now.";
-      normalized.whyDetected = "Telemetry and anomaly indicators are in nominal range for this snapshot.";
-      normalized.likelyCause = "No active failure signature is present.";
-      normalized.recommendedAction = "No repair action required now. Keep routine monitoring and run a quick confirmation check in the next telemetry window.";
-      normalized.confidence = clamp(Math.max(normalized.confidence, 92), 0, 100);
-    }
-
-    if (fixFocused && !appearsNominal) {
-      normalized.summary = normalized.summary || "A fix path is recommended before normal deployment posture.";
-      normalized.recommendedAction = normalized.recommendedAction || "Prioritize diagnostics on the highest-drift subsystem, apply corrective maintenance, and re-run AI diagnostics before mission release.";
-      normalized.confidence = clamp(normalized.confidence, 0, 100);
+    if (fixFocused) {
+      ensureFixFocusedAction(normalized, appearsNominal);
     }
 
     setSourceHeaders(res, provider, model);

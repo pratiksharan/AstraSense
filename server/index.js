@@ -114,6 +114,16 @@ function buildFallbackResponse(payload) {
   };
 }
 
+function setSourceHeaders(res, provider, model) {
+  if (provider) {
+    res.setHeader("x-ai-provider", provider);
+  }
+  if (model) {
+    res.setHeader("x-ai-model", model);
+  }
+  res.setHeader("x-ai-requested-at", new Date().toISOString());
+}
+
 function normalizeAiOutput(parsed, fallback) {
   const evidence = parsed?.evidence && typeof parsed.evidence === "object" ? parsed.evidence : null;
   const actions = parsed?.recommendedActions;
@@ -158,6 +168,7 @@ app.post("/api/ai/diagnostics", async (req, res) => {
   const apiKey = readApiKeyFromEnv();
 
   if (!apiKey) {
+    setSourceHeaders(res, "fallback", "no-api-key");
     return res.json(fallback);
   }
 
@@ -185,6 +196,8 @@ app.post("/api/ai/diagnostics", async (req, res) => {
   };
 
   try {
+    setSourceHeaders(res, provider, model);
+
     const llmResponse = await fetch(apiUrl, {
       method: "POST",
       headers: {
@@ -207,6 +220,7 @@ app.post("/api/ai/diagnostics", async (req, res) => {
     const providerBody = safeJsonParse(bodyText);
 
     if (!llmResponse.ok || !providerBody) {
+      setSourceHeaders(res, `${provider}-fallback`, model);
       return res.json(fallback);
     }
 
@@ -214,11 +228,14 @@ app.post("/api/ai/diagnostics", async (req, res) => {
     const parsedContent = safeJsonParse(content);
 
     if (!parsedContent) {
+      setSourceHeaders(res, `${provider}-fallback`, model);
       return res.json(fallback);
     }
 
+    setSourceHeaders(res, provider, model);
     return res.json(normalizeAiOutput(parsedContent, fallback));
   } catch {
+    setSourceHeaders(res, `${provider}-fallback`, model);
     return res.json(fallback);
   }
 });

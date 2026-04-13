@@ -1198,6 +1198,14 @@ const VehicleDetail = () => {
       );
 
       if (flatHasUnifiedShape) {
+        const headerProviderRaw = response.headers.get('x-ai-provider');
+        const headerModelRaw = response.headers.get('x-ai-model');
+        const headerRequestedAtRaw = response.headers.get('x-ai-requested-at');
+
+        const headerProvider = headerProviderRaw && headerProviderRaw.trim() ? headerProviderRaw.trim() : 'server-proxy';
+        const headerModel = headerModelRaw && headerModelRaw.trim() ? headerModelRaw.trim() : 'unified-json';
+        const headerRequestedAt = headerRequestedAtRaw && headerRequestedAtRaw.trim() ? headerRequestedAtRaw.trim() : new Date().toISOString();
+
         const statusSeverity: CopilotSeverity =
           asset.status === 'critical' ? 'CRITICAL' : asset.status === 'warning' ? 'WARNING' : 'NOMINAL';
 
@@ -1221,9 +1229,9 @@ const VehicleDetail = () => {
         };
 
         const normalizedSource: CopilotSource = {
-          provider: 'Server Proxy',
-          model: 'Unified JSON',
-          requestTimestamp: new Date().toISOString(),
+          provider: headerProvider,
+          model: headerModel,
+          requestTimestamp: headerRequestedAt,
         };
 
         setCopilotResult({

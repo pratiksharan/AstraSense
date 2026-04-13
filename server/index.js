@@ -97,13 +97,47 @@ function providerConfig(provider) {
   };
 }
 
+function isActionFocusedPrompt(prompt) {
+  const normalized = asString(prompt).toLowerCase();
+  if (!normalized) {
+    return false;
+  }
+
+  return /(what to do now|what should i do|what should we do|next step|next steps|immediate action|action plan|prioritize)/.test(normalized);
+}
+
 function buildFallbackResponse(payload) {
   const assetName = asString(payload?.asset?.name, "the selected asset");
+  const assetStatus = asString(payload?.asset?.status, "unknown").toLowerCase();
+  const operatorPrompt = asString(payload?.operatorPrompt);
+  const actionFocused = isActionFocusedPrompt(operatorPrompt);
   const anomalyLevel = asString(payload?.anomalyLevel, "unknown");
   const anomalyScore = Number(payload?.anomalyScore);
   const confidence = Number.isFinite(anomalyScore)
     ? clamp(Math.round((1 - anomalyScore) * 100), 25, 90)
     : 42;
+
+  const stableStatus = assetStatus === "normal" || assetStatus === "nominal";
+
+  if (actionFocused && stableStatus) {
+    return {
+      summary: `${assetName} is stable right now; no emergency intervention is needed.`,
+      whyDetected: "Current anomaly indicators are low and telemetry remains within expected operating bands.",
+      likelyCause: "No active fault signature is visible in this snapshot.",
+      confidence,
+      recommendedAction: "Run a quick readiness pass: verify comms link quality, confirm next telemetry check-in window, and keep standard monitoring active.",
+    };
+  }
+
+  if (actionFocused && !stableStatus) {
+    return {
+      summary: `${assetName} needs operator attention before normal deployment posture.`,
+      whyDetected: `The snapshot indicates ${anomalyLevel} conditions with elevated deviation signals.`,
+      likelyCause: "Likely subsystem drift or emerging component instability requiring inspection.",
+      confidence,
+      recommendedAction: "Prioritize immediate checks: isolate highest-drift telemetry channels, run subsystem diagnostics, and restrict to non-critical operations until re-evaluated.",
+    };
+  }
 
   return {
     summary: `AI analysis is temporarily unavailable for ${assetName}.`,
@@ -165,6 +199,8 @@ app.get("/api/health", (_req, res) => {
 app.post("/api/ai/diagnostics", async (req, res) => {
   const payload = req.body || {};
   const fallback = buildFallbackResponse(payload);
+  const operatorPrompt = asString(payload?.operatorPrompt);
+  const actionFocused = isActionFocusedPrompt(operatorPrompt);
   const apiKey = readApiKeyFromEnv();
 
   if (!apiKey) {
@@ -181,10 +217,14 @@ app.post("/api/ai/diagnostics", async (req, res) => {
     "summary, whyDetected, likelyCause, confidence, recommendedAction.",
     "confidence must be a number from 0 to 100.",
     "Keep wording concise, operational, and evidence-based.",
+    "If operator prompt is action-focused, recommendedAction must be concrete and specific, not generic.",
+    "When system appears nominal, still give practical next-step checks instead of only saying continue monitoring.",
   ].join(" ");
 
   const userPrompt = {
     task: "Analyze diagnostics payload and return the required JSON schema only.",
+    intentMode: actionFocused ? "action_focused" : "snapshot",
+    operatorPrompt,
     payload,
     requiredShape: {
       summary: "string",

@@ -1,101 +1,102 @@
 # AstraSense
 
-**AstraSense is a fleet intelligence and machine-condition monitoring system for defense-style vehicles. It helps operators assess readiness, detect anomalies, and inspect individual assets through a structured diagnostic interface.**
+AstraSense is a fleet intelligence and anomaly-monitoring prototype for defense-style vehicles, built to help operators detect abnormal telemetry, inspect asset health, and receive structured AI-assisted guidance.
 
-## What it does
+## What This Project Does
 
-AstraSense combines **fleet-level monitoring** with **per-vehicle diagnostics**.
+- Shows fleet readiness and anomaly status in one place 📊
+- Lets you open an asset and inspect telemetry details
+- Converts telemetry snapshots into structured diagnostics with clear recommended actions
+- Serves frontend + API from one service on Render
 
-It helps answer:
-- Which assets are ready to deploy?
-- Which vehicles need attention?
-- Where are anomalies emerging?
-- What changed from normal baseline behavior?
-- What should be done next?
+## What Makes It Different
 
-## Why it’s different
+- Focuses on telemetry-to-action interpretation, not just raw metric display
+- Uses mission-readiness framing so anomalies are tied to operational impact
+- Returns structured diagnostic reasoning instead of free-form chatbot output
 
-AstraSense is not just a dashboard.
+## API Contract (`POST /api/ai/diagnostics`)
 
-It combines:
+The backend always returns JSON in this shape:
 
-- **Fleet Intelligence** — alerts, readiness, and fleet trend visibility
-- **Mission Readiness** — deploy ready, caution, or grounded states
-- **Anomaly Score** — deviation from expected operator and machine behavior
-- **Vehicle Dossier** — telemetry, timeline, diagnostic summary, and recommended actions for a single asset
+```json
+{
+  "summary": "string",
+  "whyDetected": "string",
+  "likelyCause": "string",
+  "confidence": 78,
+  "recommendedAction": "string"
+}
+```
 
-## Core Features
-
-### Fleet Overview
-- fleet-wide monitoring
-- readiness and anomaly trend visualization
-- separate critical and anomaly alerts
-- mission readiness summary
-- filtering and sorting by asset type and state
-- 15-asset fleet including tanks, jets, helicopters, APCs, MRAPs, UAVs, and support vehicles
-
-### Vehicle Detail / Diagnostics
-- hero asset view with 3D support where applicable
-- identity and status panel
-- diagnostic summary
-- baseline vs current telemetry comparison
-- anomaly score module
-- incident timeline
-- recommended actions
+API routes are always JSON-based and do not fall back to HTML responses.
 
 ## Tech Stack
 
-- **React**
-- **TypeScript**
-- **Vite**
-- **Three.js-based 3D rendering**
-- **xAI Grok API**
-- **Render**
-- **GitHub**
+- Node/Express serves both API and frontend
+- React + TypeScript + Vite
+- Tailwind + Radix UI
+- React Three Fiber + Three.js
+- Groq/xAI-compatible chat API integration
+- Docker + Render
 
-## How it works
+## Why It Exists
 
-1. Fleet status is surfaced through alerts, readiness, and trend views  
-2. Asset anomalies are derived from deviations in expected operator and machine behavior  
-3. Each vehicle can be opened into a detailed diagnostics view  
-4. The analysis layer helps translate system state into operator-facing diagnostic insight  
+Most dashboards tell you something changed.
+AstraSense tries to tell you what changed, why it matters, and what to do next. 🧠
 
-## Why it works for a hackathon
-
-AstraSense stands out because it combines:
-- strong product identity
-- realistic monitoring logic
-- a polished UI
-- a clear flow from fleet overview to asset-level intelligence
-
-It is designed to be easy to understand quickly while still feeling technically thoughtful.
-
-## Local Setup
+## Local Development
 
 ### Prerequisites
+
 - Node.js 18+
 - npm
 
-### Run locally
+### Setup
 
 ```bash
 git clone https://github.com/pratiksharan/AstraSense.git
 cd AstraSense
 npm install
+```
+
+### Run Frontend Only
+
+```bash
 npm run dev
 ```
 
-### Build
+### Run Frontend + API
+
+```bash
+npm run dev:full
+```
+
+### Run Production Mode Locally
 
 ```bash
 npm run build
-npm run preview
+npm start
 ```
 
-## Deployment
+## Environment Variables (`.env`)
 
-AstraSense is deployed on **Render** and versioned through **GitHub**.
+Use these values in Render or local development:
 
-## Note
+- `AI_PROVIDER=groq`
+- `GROQ_API_KEY=your_api_key`
+- `GROQ_MODEL=llama-3.1-8b-instant`
+- `AI_MODEL=llama-3.1-8b-instant` (optional override)
 
-AstraSense uses bounded synthetic/demo telemetry to simulate believable fleet conditions, sparse anomaly activity, and realistic readiness shifts. It is built as a decision-support prototype.
+## Deployment (Render)
+
+AstraSense runs as one Dockerized web service:
+
+- Build uses Vite
+- Runtime uses the Express server
+- Frontend and API share the same URL ✅
+
+## Notes
+
+Telemetry data in this prototype is synthetic, but constrained to realistic ranges and drift patterns.
+The objective is to evaluate monitoring and response workflows under operational-style conditions.

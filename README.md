@@ -4,7 +4,7 @@ AstraSense is a fleet intelligence and anomaly-monitoring prototype for defense-
 
 ## What This Project Does
 
-- Shows fleet readiness and anomaly status in one place 📊
+- Shows fleet readiness and anomaly status in one place
 - Lets you open an asset and inspect telemetry details
 - Converts telemetry snapshots into structured diagnostics with clear recommended actions
 - Serves frontend + API from one service on Render
@@ -67,7 +67,7 @@ API routes are always JSON-based and do not fall back to HTML responses.
 ## Why It Exists
 
 Most dashboards tell you something changed.
-AstraSense tries to tell you what changed, why it matters, and what to do next. 🧠
+AstraSense tries to tell you what changed, why it matters, and what to do next.
 
 ## Local Development
 
@@ -118,7 +118,7 @@ AstraSense runs as one Dockerized web service:
 
 - Build uses Vite
 - Runtime uses the Express server
-- Frontend and API share the same URL ✅
+- Frontend and API share the same URL
 
 ## Notes
 

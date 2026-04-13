@@ -15,6 +15,30 @@ AstraSense is a fleet intelligence and anomaly-monitoring prototype for defense-
 - Uses mission-readiness framing so anomalies are tied to operational impact
 - Returns structured diagnostic reasoning instead of free-form chatbot output
 
+## Visual Walkthrough
+
+### Fleet Overview
+
+Top section with fleet graph and trend context:
+
+![Fleet Overview - Top Graph](two.png)
+
+Vehicles dashboard and mission readiness view:
+
+![Fleet Overview - Vehicles and Mission Readiness](one.png)
+
+### Asset Detail
+
+Per-asset telemetry and health inspection view:
+
+![Asset Detail View](three.png)
+
+### AI Diagnostic Result
+
+Structured AI analysis output with recommended action:
+
+![AI Diagnostic Result](four.png)
+
 ## API Contract (`POST /api/ai/diagnostics`)
 
 The backend always returns JSON in this shape:

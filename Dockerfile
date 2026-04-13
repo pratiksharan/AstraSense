@@ -9,8 +9,6 @@ COPY . .
 
 RUN npm run build
 
-RUN npm install -g serve
-
 EXPOSE 10000
 
-CMD ["serve", "-s", "dist", "-l", "10000"]
+CMD ["node", "server/index.js"]

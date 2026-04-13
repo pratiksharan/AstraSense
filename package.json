@@ -5,10 +5,10 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "dev:api": "node server/ai-proxy.mjs",
+    "dev:api": "node server/index.js",
     "dev:full": "concurrently \"npm run dev\" \"npm run dev:api\"",
     "build": "vite build",
-    "start": "node server/ai-proxy.mjs",
+    "start": "node server/index.js",
     "build:dev": "vite build --mode development",
     "lint": "eslint .",
     "preview": "vite preview",

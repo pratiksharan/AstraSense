@@ -1185,6 +1185,54 @@ const VehicleDetail = () => {
 
       const payloadObject = (payload && typeof payload === 'object') ? payload as Record<string, unknown> : null;
 
+      const flatSummary = typeof payloadObject?.summary === 'string' ? payloadObject.summary.trim() : '';
+      const flatWhyDetected = typeof payloadObject?.whyDetected === 'string' ? payloadObject.whyDetected.trim() : '';
+      const flatLikelyCause = typeof payloadObject?.likelyCause === 'string' ? payloadObject.likelyCause.trim() : '';
+      const flatRecommendedAction = typeof payloadObject?.recommendedAction === 'string' ? payloadObject.recommendedAction.trim() : '';
+      const flatHasUnifiedShape = Boolean(
+        flatSummary &&
+        flatWhyDetected &&
+        flatLikelyCause &&
+        flatRecommendedAction &&
+        Number.isFinite(Number(payloadObject?.confidence)),
+      );
+
+      if (flatHasUnifiedShape) {
+        const statusSeverity: CopilotSeverity =
+          asset.status === 'critical' ? 'CRITICAL' : asset.status === 'warning' ? 'WARNING' : 'NOMINAL';
+
+        const normalizedAnalysis: CopilotAnalysis = {
+          mode: copilotPrompt.trim() ? 'direct_answer' : 'snapshot_report',
+          primaryAnswer: flatSummary,
+          severity: statusSeverity,
+          confidence: Math.round(clamp(Number(payloadObject?.confidence) || 0, 0, 100)),
+          supportingPoints: [flatWhyDetected, flatLikelyCause].filter(Boolean),
+          recommendedActions: [
+            {
+              tier: 'Immediate',
+              action: flatRecommendedAction,
+            },
+          ],
+          evidence: {
+            whatChanged: [flatWhyDetected],
+            whyItMatters: [flatSummary],
+            likelyCauses: [flatLikelyCause],
+          },
+        };
+
+        const normalizedSource: CopilotSource = {
+          provider: 'Server Proxy',
+          model: 'Unified JSON',
+          requestTimestamp: new Date().toISOString(),
+        };
+
+        setCopilotResult({
+          ...normalizedAnalysis,
+        });
+        setCopilotSource(normalizedSource);
+        return;
+      }
+
       if (!response.ok || payloadObject?.ok !== true) {
         const detailsObject =
           payloadObject?.details && typeof payloadObject.details === 'object'
@@ -1205,10 +1253,6 @@ const VehicleDetail = () => {
 
       if (!analysisRaw) {
         throw new Error('AI returned unexpected response format');
-      }
-
-      if (!sourceRaw || typeof sourceRaw.provider !== 'string' || typeof sourceRaw.model !== 'string' || typeof sourceRaw.requestTimestamp !== 'string') {
-        throw new Error('AI service did not return source metadata.');
       }
 
       const toStringList = (value: unknown): string[] => {
@@ -1306,10 +1350,10 @@ const VehicleDetail = () => {
       };
 
       const normalizedSource: CopilotSource = {
-        provider: sourceRaw.provider,
-        model: sourceRaw.model,
-        requestTimestamp: sourceRaw.requestTimestamp,
-        requestId: typeof sourceRaw.requestId === 'string' ? sourceRaw.requestId : undefined,
+        provider: typeof sourceRaw?.provider === 'string' ? sourceRaw.provider : 'Server Proxy',
+        model: typeof sourceRaw?.model === 'string' ? sourceRaw.model : 'Legacy JSON',
+        requestTimestamp: typeof sourceRaw?.requestTimestamp === 'string' ? sourceRaw.requestTimestamp : new Date().toISOString(),
+        requestId: typeof sourceRaw?.requestId === 'string' ? sourceRaw.requestId : undefined,
       };
 
       setCopilotResult({

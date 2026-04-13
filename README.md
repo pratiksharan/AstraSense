@@ -20,9 +20,11 @@ It combines telemetry monitoring, anomaly interpretation, and AI-assisted decisi
 
 ## Visual Walkthrough
 
-### Fleet Overview
+### Fleet Overview (Alerts + Graph)
 
 ![Fleet Overview - Trend Graph](public/images/readme/two.png)
+
+### Fleet Overview (Main Dashboard + Mission Readiness)
 
 ![Fleet Overview - Vehicles and Mission Readiness](public/images/readme/one.png)
 

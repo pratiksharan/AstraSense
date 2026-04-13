@@ -13,8 +13,8 @@ const AppHeader = () => {
   });
 
   return (
-    <header className="sticky top-0 z-50 flex items-center justify-between px-6 py-3 bg-background/95 backdrop-blur-sm border-b border-border">
-      <div className="flex items-center gap-3">
+    <header className="sticky top-0 z-50 flex flex-wrap sm:flex-nowrap items-start sm:items-center justify-between gap-y-2 px-4 sm:px-6 py-2.5 sm:py-3 bg-background/95 backdrop-blur-sm border-b border-border">
+      <div className="flex items-center gap-3 min-w-0">
         <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center relative overflow-hidden">
           <div className="absolute inset-0 bg-gradient-to-br from-primary/20 to-transparent" />
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" className="text-primary relative z-10">
@@ -31,13 +31,13 @@ const AppHeader = () => {
           Astra<span className="text-primary">Sense</span>
         </span>
       </div>
-      <div className="flex items-center gap-6">
+      <div className="ml-auto flex flex-col items-end gap-1 sm:flex-row sm:items-center sm:gap-6">
         <div className="flex items-center gap-2 text-primary">
           <Activity className="w-4 h-4 animate-pulse-subtle" />
-          <span className="text-sm font-medium tracking-wide">Live Monitoring</span>
+          <span className="text-xs sm:text-sm font-medium tracking-wide">Live Monitoring</span>
         </div>
-        <div className="h-4 w-px bg-border" />
-        <span className="text-sm text-muted-foreground font-mono">{formatted}</span>
+        <div className="hidden sm:block h-4 w-px bg-border" />
+        <span className="text-[11px] sm:text-sm text-muted-foreground font-mono text-right leading-tight">{formatted}</span>
       </div>
     </header>
   );

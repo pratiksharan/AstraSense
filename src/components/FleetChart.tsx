@@ -23,20 +23,22 @@ const FleetChart = () => {
           </div>
           <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-6">
             {/* Time range controls */}
-            <div className="flex items-center bg-secondary rounded-lg p-0.5 w-fit">
-              {timeRanges.map(r => (
-                <button
-                  key={r}
-                  onClick={() => setRange(r)}
-                  className={`px-2.5 py-1 text-xs font-medium rounded-md transition-all ${
-                    r === range
-                      ? 'bg-primary text-primary-foreground shadow-sm'
-                      : 'text-muted-foreground hover:text-foreground'
-                  }`}
-                >
-                  {r}
-                </button>
-              ))}
+            <div className="overflow-x-auto pb-0.5 -mb-0.5 sm:overflow-visible sm:pb-0 sm:mb-0">
+              <div className="flex items-center bg-secondary rounded-lg p-0.5 w-fit min-w-max">
+                {timeRanges.map(r => (
+                  <button
+                    key={r}
+                    onClick={() => setRange(r)}
+                    className={`px-2.5 py-1 text-xs font-medium rounded-md transition-all ${
+                      r === range
+                        ? 'bg-primary text-primary-foreground shadow-sm'
+                        : 'text-muted-foreground hover:text-foreground'
+                    }`}
+                  >
+                    {r}
+                  </button>
+                ))}
+              </div>
             </div>
             {/* KPI Cluster */}
             <div className="flex flex-wrap items-center gap-3 sm:gap-4 sm:pl-4 sm:border-l border-border">
@@ -49,7 +51,7 @@ const FleetChart = () => {
         </div>
 
         {/* Chart */}
-        <div className="h-[260px]">
+        <div className="h-[220px] sm:h-[260px]">
           <ResponsiveContainer width="100%" height="100%">
             <ComposedChart data={data} margin={{ top: 5, right: 10, left: -15, bottom: 0 }}>
               <defs>
@@ -126,7 +128,7 @@ const FleetChart = () => {
 
         {/* Legend + Insight */}
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between mt-3 pt-3 border-t border-border/50">
-          <div className="flex items-center gap-5">
+          <div className="flex flex-wrap items-center gap-4 sm:gap-5">
             <div className="flex items-center gap-2">
               <div className="w-4 h-0.5 bg-primary rounded-full" />
               <span className="text-xs text-muted-foreground">Fleet Readiness</span>

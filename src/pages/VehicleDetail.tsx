@@ -1378,9 +1378,9 @@ const VehicleDetail = () => {
   };
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background overflow-x-hidden">
       <AppHeader />
-      <div className="px-6 pt-4 pb-2">
+      <div className="px-4 sm:px-6 pt-4 pb-4">
         <button
           onClick={() => navigate('/')}
           className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors mb-5"
@@ -1389,14 +1389,14 @@ const VehicleDetail = () => {
           Back to Fleet
         </button>
 
-        <div className="grid grid-cols-1 lg:grid-cols-[400px_1fr] gap-6">
+        <div className="grid grid-cols-1 lg:grid-cols-[400px_1fr] gap-4 lg:gap-6">
           {/* Left Column */}
           <div className="space-y-4">
             <div className="rounded-xl overflow-hidden border border-border">
               <TankModelViewer assetKey={asset.id} fallbackImageUrl={asset.image} />
             </div>
-            <div className="rounded-xl bg-card border border-border p-5">
-              <div className="flex items-start justify-between mb-4">
+            <div className="rounded-xl bg-card border border-border p-4 sm:p-5">
+              <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-2 mb-4">
                 <div>
                   <h1 className="text-xl font-bold">{asset.name}</h1>
                   <p className="text-xs tracking-widest text-muted-foreground uppercase mt-0.5">{asset.subtype}</p>
@@ -1407,7 +1407,7 @@ const VehicleDetail = () => {
                 </span>
               </div>
 
-              <div className="grid grid-cols-2 gap-4 mb-5">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-5">
                 <div className="flex items-center gap-2">
                   <Hash className="w-3.5 h-3.5 text-muted-foreground" />
                   <div>
@@ -1539,7 +1539,7 @@ const VehicleDetail = () => {
                 </div>
               </div>
 
-              <div className="rounded-xl bg-card border border-border p-5 flex flex-col min-h-0 max-h-[430px] overflow-hidden">
+              <div className="rounded-xl bg-card border border-border p-4 sm:p-5 flex flex-col min-h-0 max-h-[430px] overflow-hidden">
                 <p className="text-[10px] uppercase tracking-[0.15em] text-muted-foreground font-semibold mb-4">Incident Timeline</p>
                 <div className="space-y-4 overflow-y-auto pr-1 pb-1 flex-1 min-h-0">
                   {timelineDisplayEvents.map((event, i) => (
@@ -1604,9 +1604,9 @@ const VehicleDetail = () => {
             </div>
 
             {/* Diagnostic Intelligence */}
-            <div className="rounded-xl bg-card border border-border p-5">
+            <div className="rounded-xl bg-card border border-border p-4 sm:p-5">
               <p className="text-[10px] uppercase tracking-[0.15em] text-primary font-semibold mb-3">Diagnostic Intelligence</p>
-              <div className="flex items-center gap-2 mb-2">
+              <div className="flex flex-wrap items-center gap-2 mb-2">
                 <CheckCircle2 className="w-5 h-5 text-primary" />
                 <h2 className="text-lg font-bold">{asset.diagnosticHeadline}</h2>
               </div>
@@ -1619,11 +1619,11 @@ const VehicleDetail = () => {
             </div>
 
             {/* AI Copilot */}
-            <div className="rounded-xl bg-card border border-border p-5">
+            <div className="rounded-xl bg-card border border-border p-4 sm:p-5">
               <div className="mb-4">
-                <div className="flex items-center justify-between gap-3">
+                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 sm:gap-3">
                   <p className="text-[10px] uppercase tracking-[0.15em] text-primary font-semibold">AstraSense AI Copilot</p>
-                  <span className="inline-flex items-center gap-1 rounded-md border border-primary/35 bg-primary/10 px-2.5 py-0.5 text-[9px] font-semibold uppercase tracking-[0.1em] text-primary">
+                  <span className="inline-flex items-center gap-1 rounded-md border border-primary/35 bg-primary/10 px-2.5 py-0.5 text-[9px] font-semibold uppercase tracking-[0.1em] text-primary w-fit">
                     <Bot className="h-2.5 w-2.5" />
                     Live LLM Response
                   </span>
@@ -1677,7 +1677,7 @@ const VehicleDetail = () => {
                   )}
 
                   <div className="rounded-md border border-border/70 bg-secondary/20 px-3 py-2.5">
-                    <div className="flex items-center justify-between gap-3 mb-1">
+                    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 sm:gap-3 mb-1">
                       <p className="text-xs text-muted-foreground uppercase tracking-wider">Primary Answer</p>
                       <span className={`px-2 py-0.5 rounded border text-[10px] font-bold uppercase tracking-wide ${
                         copilotResult.severity === 'CRITICAL'
@@ -1791,12 +1791,12 @@ const VehicleDetail = () => {
             </div>
 
             {/* Why This Was Detected */}
-            <div className="rounded-xl bg-card border border-border p-5">
+            <div className="rounded-xl bg-card border border-border p-4 sm:p-5">
               <p className="text-[10px] uppercase tracking-[0.15em] text-muted-foreground font-semibold mb-4">Why This Was Detected</p>
               <div className="space-y-3">
                 {evidenceBlocks.map((block, i) => (
                   <div key={i} className="rounded-lg border border-border/70 bg-secondary/20 p-3">
-                    <div className="flex items-center justify-between gap-3 mb-1">
+                    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 sm:gap-3 mb-1">
                       <p className="text-sm font-semibold text-foreground">{block.title}</p>
                       <span className={`px-2 py-0.5 rounded border text-[10px] font-bold uppercase tracking-wide ${statusToneClasses[block.severity]}`}>
                         {block.severity === 'critical' ? 'Critical' : block.severity === 'watch' ? 'Watch' : 'Normal'}
@@ -1810,9 +1810,9 @@ const VehicleDetail = () => {
             </div>
 
             {/* Telemetry Comparison */}
-            <div className="rounded-xl bg-card border border-border p-5">
+            <div className="rounded-xl bg-card border border-border p-4 sm:p-5">
               <p className="text-[10px] uppercase tracking-[0.15em] text-muted-foreground font-semibold mb-4">Telemetry Comparison</p>
-              <div className="overflow-x-auto">
+              <div className="overflow-x-auto -mx-1 px-1 sm:mx-0 sm:px-0">
                 <table className="w-full min-w-[820px]">
                   <thead>
                     <tr className="text-[10px] uppercase tracking-widest text-muted-foreground">

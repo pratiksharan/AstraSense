@@ -54,15 +54,15 @@ const MissionReadiness = () => {
         <div className="px-4 sm:px-6 pb-4 pt-1 border-t border-border">
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-x-6 gap-y-0 mt-2">
             {assets.map(a => (
-              <div key={a.id} className="flex items-center justify-between py-1.5 gap-3">
+              <div key={a.id} className="flex flex-col sm:flex-row sm:items-center justify-between py-1.5 gap-2 sm:gap-3">
                 <div className="flex items-center gap-2 min-w-0">
                   <span className={`w-1.5 h-1.5 rounded-full flex-shrink-0 ${
                     a.status === 'normal' ? 'bg-status-normal' : a.status === 'warning' ? 'bg-status-warning' : 'bg-status-critical'
                   }`} />
                   <span className="text-[13px] font-medium truncate">{a.name}</span>
                 </div>
-                <div className="flex items-center gap-3 flex-shrink-0">
-                  <span className={`text-[10px] font-semibold uppercase tracking-wide ${getDeployColor(a.status)}`}>
+                <div className="flex items-center justify-between sm:justify-start w-full sm:w-auto gap-3 flex-shrink-0">
+                  <span className={`text-[10px] font-semibold uppercase tracking-wide text-right sm:text-left ${getDeployColor(a.status)}`}>
                     {getDeployStatus(a.status)}
                   </span>
                   <span className="text-[11px] text-muted-foreground font-mono tabular-nums">{a.readiness}</span>

@@ -106,6 +106,15 @@ function isActionFocusedPrompt(prompt) {
   return /(what to do now|what should i do|what should we do|next step|next steps|immediate action|action plan|prioritize)/.test(normalized);
 }
 
+function isFixFocusedPrompt(prompt) {
+  const normalized = asString(prompt).toLowerCase();
+  if (!normalized) {
+    return false;
+  }
+
+  return /(how to fix|fix it|fix this|repair|resolve|what to fix|how do i fix)/.test(normalized);
+}
+
 function buildFallbackResponse(payload) {
   const assetName = asString(payload?.asset?.name, "the selected asset");
   const assetStatus = asString(payload?.asset?.status, "unknown").toLowerCase();
@@ -201,6 +210,12 @@ app.post("/api/ai/diagnostics", async (req, res) => {
   const fallback = buildFallbackResponse(payload);
   const operatorPrompt = asString(payload?.operatorPrompt);
   const actionFocused = isActionFocusedPrompt(operatorPrompt);
+  const fixFocused = isFixFocusedPrompt(operatorPrompt);
+  const assetStatus = asString(payload?.asset?.status).toLowerCase();
+  const anomalyScore = Number(payload?.anomalyScore);
+  const appearsNominal =
+    (assetStatus === "normal" || assetStatus === "nominal") &&
+    (!Number.isFinite(anomalyScore) || anomalyScore < 0.2);
   const apiKey = readApiKeyFromEnv();
 
   if (!apiKey) {
@@ -272,8 +287,24 @@ app.post("/api/ai/diagnostics", async (req, res) => {
       return res.json(fallback);
     }
 
+    const normalized = normalizeAiOutput(parsedContent, fallback);
+
+    if (fixFocused && appearsNominal) {
+      normalized.summary = "No fault is currently detected, so there is nothing to repair right now.";
+      normalized.whyDetected = "Telemetry and anomaly indicators are in nominal range for this snapshot.";
+      normalized.likelyCause = "No active failure signature is present.";
+      normalized.recommendedAction = "No repair action required now. Keep routine monitoring and run a quick confirmation check in the next telemetry window.";
+      normalized.confidence = clamp(Math.max(normalized.confidence, 92), 0, 100);
+    }
+
+    if (fixFocused && !appearsNominal) {
+      normalized.summary = normalized.summary || "A fix path is recommended before normal deployment posture.";
+      normalized.recommendedAction = normalized.recommendedAction || "Prioritize diagnostics on the highest-drift subsystem, apply corrective maintenance, and re-run AI diagnostics before mission release.";
+      normalized.confidence = clamp(normalized.confidence, 0, 100);
+    }
+
     setSourceHeaders(res, provider, model);
-    return res.json(normalizeAiOutput(parsedContent, fallback));
+    return res.json(normalized);
   } catch {
     setSourceHeaders(res, `${provider}-fallback`, model);
     return res.json(fallback);

@@ -2,42 +2,80 @@ import { Activity } from 'lucide-react';
 
 const AppHeader = () => {
   const now = new Date();
-  const formatted = now.toLocaleDateString('en-US', {
+  const dateLabel = now.toLocaleDateString('en-US', {
     month: 'short',
     day: 'numeric',
     year: 'numeric',
-  }) + ' · ' + now.toLocaleTimeString('en-US', {
+  });
+  const timeLabel = now.toLocaleTimeString('en-US', {
     hour: 'numeric',
     minute: '2-digit',
     hour12: true,
   });
+  const formatted = `${dateLabel} · ${timeLabel}`;
 
   return (
-    <header className="sticky top-0 z-50 flex flex-wrap sm:flex-nowrap items-start sm:items-center justify-between gap-y-2 px-4 sm:px-6 py-2.5 sm:py-3 bg-background/95 backdrop-blur-sm border-b border-border">
-      <div className="flex items-center gap-3 min-w-0">
-        <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center relative overflow-hidden">
-          <div className="absolute inset-0 bg-gradient-to-br from-primary/20 to-transparent" />
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" className="text-primary relative z-10">
-            <circle cx="12" cy="12" r="3" fill="currentColor" opacity="0.9" />
-            <circle cx="12" cy="12" r="7" stroke="currentColor" strokeWidth="1.5" opacity="0.5" />
-            <circle cx="12" cy="12" r="11" stroke="currentColor" strokeWidth="1" opacity="0.25" />
-            <line x1="12" y1="1" x2="12" y2="4" stroke="currentColor" strokeWidth="1.5" opacity="0.6" />
-            <line x1="12" y1="20" x2="12" y2="23" stroke="currentColor" strokeWidth="1.5" opacity="0.6" />
-            <line x1="1" y1="12" x2="4" y2="12" stroke="currentColor" strokeWidth="1.5" opacity="0.6" />
-            <line x1="20" y1="12" x2="23" y2="12" stroke="currentColor" strokeWidth="1.5" opacity="0.6" />
-          </svg>
+    <header className="sticky top-0 z-50 bg-background/95 backdrop-blur-sm border-b border-border">
+      <div className="sm:hidden px-3 py-2.5">
+        <div className="flex items-center justify-between gap-3">
+          <div className="flex items-center gap-3 min-w-0">
+            <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center relative overflow-hidden">
+              <div className="absolute inset-0 bg-gradient-to-br from-primary/20 to-transparent" />
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" className="text-primary relative z-10">
+                <circle cx="12" cy="12" r="3" fill="currentColor" opacity="0.9" />
+                <circle cx="12" cy="12" r="7" stroke="currentColor" strokeWidth="1.5" opacity="0.5" />
+                <circle cx="12" cy="12" r="11" stroke="currentColor" strokeWidth="1" opacity="0.25" />
+                <line x1="12" y1="1" x2="12" y2="4" stroke="currentColor" strokeWidth="1.5" opacity="0.6" />
+                <line x1="12" y1="20" x2="12" y2="23" stroke="currentColor" strokeWidth="1.5" opacity="0.6" />
+                <line x1="1" y1="12" x2="4" y2="12" stroke="currentColor" strokeWidth="1.5" opacity="0.6" />
+                <line x1="20" y1="12" x2="23" y2="12" stroke="currentColor" strokeWidth="1.5" opacity="0.6" />
+              </svg>
+            </div>
+            <span className="text-[17px] font-semibold tracking-tight">
+              Astra<span className="text-primary">Sense</span>
+            </span>
+          </div>
+
+          <div className="flex items-center gap-1.5 text-primary shrink-0">
+            <Activity className="w-3.5 h-3.5 animate-pulse-subtle" />
+            <span className="text-[12px] font-medium tracking-wide">Live Monitoring</span>
+          </div>
         </div>
-        <span className="text-[17px] font-semibold tracking-tight">
-          Astra<span className="text-primary">Sense</span>
-        </span>
+
+        <div className="mt-1 pl-11 flex items-center justify-end gap-2 text-[11px] text-muted-foreground font-mono leading-none">
+          <span>{dateLabel}</span>
+          <span className="opacity-60">•</span>
+          <span>{timeLabel}</span>
+        </div>
       </div>
-      <div className="ml-auto flex flex-col items-end gap-1 sm:flex-row sm:items-center sm:gap-6">
-        <div className="flex items-center gap-2 text-primary">
-          <Activity className="w-4 h-4 animate-pulse-subtle" />
-          <span className="text-xs sm:text-sm font-medium tracking-wide">Live Monitoring</span>
+
+      <div className="hidden sm:flex items-center justify-between px-6 py-3">
+        <div className="flex items-center gap-3">
+          <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center relative overflow-hidden">
+            <div className="absolute inset-0 bg-gradient-to-br from-primary/20 to-transparent" />
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" className="text-primary relative z-10">
+              <circle cx="12" cy="12" r="3" fill="currentColor" opacity="0.9" />
+              <circle cx="12" cy="12" r="7" stroke="currentColor" strokeWidth="1.5" opacity="0.5" />
+              <circle cx="12" cy="12" r="11" stroke="currentColor" strokeWidth="1" opacity="0.25" />
+              <line x1="12" y1="1" x2="12" y2="4" stroke="currentColor" strokeWidth="1.5" opacity="0.6" />
+              <line x1="12" y1="20" x2="12" y2="23" stroke="currentColor" strokeWidth="1.5" opacity="0.6" />
+              <line x1="1" y1="12" x2="4" y2="12" stroke="currentColor" strokeWidth="1.5" opacity="0.6" />
+              <line x1="20" y1="12" x2="23" y2="12" stroke="currentColor" strokeWidth="1.5" opacity="0.6" />
+            </svg>
+          </div>
+          <span className="text-[17px] font-semibold tracking-tight">
+            Astra<span className="text-primary">Sense</span>
+          </span>
         </div>
-        <div className="hidden sm:block h-4 w-px bg-border" />
-        <span className="text-[11px] sm:text-sm text-muted-foreground font-mono text-right leading-tight">{formatted}</span>
+
+        <div className="flex items-center gap-6">
+          <div className="flex items-center gap-2 text-primary">
+            <Activity className="w-4 h-4 animate-pulse-subtle" />
+            <span className="text-sm font-medium tracking-wide">Live Monitoring</span>
+          </div>
+          <div className="h-4 w-px bg-border" />
+          <span className="text-sm text-muted-foreground font-mono">{formatted}</span>
+        </div>
       </div>
     </header>
   );

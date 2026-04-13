@@ -1,10 +1,12 @@
 import { useState, useMemo } from 'react';
-import { LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, ComposedChart, Area } from 'recharts';
+import { Line, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, ComposedChart, Area } from 'recharts';
 import { assets, generateChartData, timeRanges, type TimeRange } from '@/data/fleetData';
 import { AlertCircle, AlertTriangle, Activity, Target } from 'lucide-react';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 const FleetChart = () => {
   const [range, setRange] = useState<TimeRange>('7D');
+  const isMobile = useIsMobile();
   const { data, insight } = useMemo(() => generateChartData(range), [range]);
   const totalAssets = assets.length;
   const cautionAssets = assets.filter(asset => asset.status === 'warning').length;
@@ -12,9 +14,9 @@ const FleetChart = () => {
   const avgAnomaly = (assets.reduce((sum, asset) => sum + asset.anomalyScore, 0) / assets.length).toFixed(2);
 
   return (
-    <div className="mx-4 sm:mx-6 mt-6 rounded-xl bg-card border border-border overflow-hidden">
-      <div className="px-4 sm:px-6 pt-5 pb-4">
-        <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between mb-5">
+    <div className="mx-2.5 sm:mx-6 mt-5 sm:mt-6 rounded-xl bg-card border border-border overflow-hidden">
+      <div className="px-3 sm:px-6 pt-4 sm:pt-5 pb-4">
+        <div className="flex flex-col gap-3.5 sm:gap-4 lg:flex-row lg:items-start lg:justify-between mb-4 sm:mb-5">
           <div>
             <h2 className="text-xs font-semibold tracking-[0.15em] uppercase text-muted-foreground">Fleet Performance</h2>
             <p className="text-xs text-muted-foreground/60 mt-0.5">
@@ -23,13 +25,13 @@ const FleetChart = () => {
           </div>
           <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-6">
             {/* Time range controls */}
-            <div className="overflow-x-auto pb-0.5 -mb-0.5 sm:overflow-visible sm:pb-0 sm:mb-0">
-              <div className="flex items-center bg-secondary rounded-lg p-0.5 w-fit min-w-max">
+            <div className="overflow-x-auto pb-0.5 -mb-0.5 sm:overflow-visible sm:pb-0 sm:mb-0 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+              <div className="inline-flex items-center bg-secondary rounded-lg p-0.5 w-fit min-w-max">
                 {timeRanges.map(r => (
                   <button
                     key={r}
                     onClick={() => setRange(r)}
-                    className={`px-2.5 py-1 text-xs font-medium rounded-md transition-all ${
+                    className={`shrink-0 px-3 sm:px-2.5 py-1 text-[11px] sm:text-xs font-medium rounded-md transition-all ${
                       r === range
                         ? 'bg-primary text-primary-foreground shadow-sm'
                         : 'text-muted-foreground hover:text-foreground'
@@ -41,7 +43,7 @@ const FleetChart = () => {
               </div>
             </div>
             {/* KPI Cluster */}
-            <div className="flex flex-wrap items-center gap-3 sm:gap-4 sm:pl-4 sm:border-l border-border">
+            <div className="grid grid-cols-2 gap-2 sm:flex sm:flex-wrap sm:items-center sm:gap-4 sm:pl-4 sm:border-l border-border">
               <KPI icon={<Target className="w-3.5 h-3.5" />} value={`${totalAssets}`} label="TOTAL" color="text-primary" />
               <KPI icon={<AlertTriangle className="w-3.5 h-3.5" />} value={`${cautionAssets}`} label="CAUTION" color="text-status-warning" />
               <KPI icon={<AlertCircle className="w-3.5 h-3.5" />} value={`${criticalAssets}`} label="CRITICAL" color="text-status-critical" />
@@ -51,9 +53,9 @@ const FleetChart = () => {
         </div>
 
         {/* Chart */}
-        <div className="h-[220px] sm:h-[260px]">
+        <div className="h-[250px] sm:h-[260px]">
           <ResponsiveContainer width="100%" height="100%">
-            <ComposedChart data={data} margin={{ top: 5, right: 10, left: -15, bottom: 0 }}>
+            <ComposedChart data={data} margin={isMobile ? { top: 8, right: 0, left: -26, bottom: 6 } : { top: 5, right: 10, left: -15, bottom: 0 }}>
               <defs>
                 <linearGradient id="readinessGrad" x1="0" y1="0" x2="0" y2="1">
                   <stop offset="0%" stopColor="hsl(160, 70%, 45%)" stopOpacity={0.15} />
@@ -63,28 +65,31 @@ const FleetChart = () => {
               <CartesianGrid stroke="hsl(220, 13%, 15%)" strokeDasharray="3 3" vertical={false} />
               <XAxis
                 dataKey="label"
-                tick={{ fill: 'hsl(215, 12%, 45%)', fontSize: 11 }}
+                tick={{ fill: 'hsl(215, 12%, 45%)', fontSize: isMobile ? 10 : 11 }}
                 axisLine={false}
                 tickLine={false}
-                dy={8}
+                interval={isMobile ? 2 : 0}
+                dy={isMobile ? 7 : 8}
               />
               <YAxis
                 yAxisId="left"
                 domain={[85, 100]}
-                tick={{ fill: 'hsl(215, 12%, 45%)', fontSize: 11 }}
+                tick={{ fill: 'hsl(215, 12%, 45%)', fontSize: isMobile ? 10 : 11 }}
                 axisLine={false}
                 tickLine={false}
                 tickFormatter={v => `${v}%`}
-                dx={-5}
+                width={isMobile ? 26 : 34}
+                dx={isMobile ? -1 : -5}
               />
               <YAxis
                 yAxisId="right"
                 orientation="right"
                 domain={[0, 'auto']}
-                tick={{ fill: 'hsl(215, 12%, 45%)', fontSize: 11 }}
+                tick={{ fill: 'hsl(215, 12%, 45%)', fontSize: isMobile ? 10 : 11 }}
                 axisLine={false}
                 tickLine={false}
                 allowDecimals={false}
+                width={isMobile ? 20 : 30}
               />
               <Tooltip
                 contentStyle={{
@@ -127,7 +132,7 @@ const FleetChart = () => {
         </div>
 
         {/* Legend + Insight */}
-        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between mt-3 pt-3 border-t border-border/50">
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between mt-3.5 sm:mt-3 pt-3 border-t border-border/50">
           <div className="flex flex-wrap items-center gap-4 sm:gap-5">
             <div className="flex items-center gap-2">
               <div className="w-4 h-0.5 bg-primary rounded-full" />
@@ -138,7 +143,7 @@ const FleetChart = () => {
               <span className="text-xs text-muted-foreground">Anomaly Count</span>
             </div>
           </div>
-          <p className="text-xs text-muted-foreground/70 italic max-w-lg sm:text-right">{insight}</p>
+          <p className="text-[12px] sm:text-xs leading-relaxed text-muted-foreground/70 italic max-w-lg sm:text-right">{insight}</p>
         </div>
       </div>
     </div>
@@ -146,7 +151,7 @@ const FleetChart = () => {
 };
 
 const KPI = ({ icon, value, label, color }: { icon: React.ReactNode; value: string; label: string; color: string }) => (
-  <div className="flex items-center gap-2">
+  <div className="flex items-center gap-2 max-sm:rounded-lg max-sm:border max-sm:border-border/60 max-sm:bg-secondary/25 max-sm:px-2.5 max-sm:py-2">
     <div className={`w-7 h-7 rounded-lg bg-secondary flex items-center justify-center ${color}`}>
       {icon}
     </div>

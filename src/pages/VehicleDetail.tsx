@@ -10,7 +10,6 @@ type SparkKey = 'temp' | 'rpm' | 'vibration' | 'anomaly';
 type TrendDirection = 'up' | 'down' | 'flat';
 type RowSeverity = 'normal' | 'watch' | 'critical';
 type TelemetryGroup = 'critical' | 'monitored' | 'stable';
-type TimelineEventType = 'Detection' | 'Escalation' | 'Action' | 'System' | 'Recovery';
 type ActionTier = 'Immediate' | 'Next 15 Min' | 'Follow-up';
 type CopilotResponseMode = 'direct_answer' | 'snapshot_report' | 'comparison' | 'action_focused' | 'severity_focused';
 type CopilotSeverity = 'NOMINAL' | 'WATCH' | 'WARNING' | 'CRITICAL';
@@ -163,25 +162,6 @@ const parseDriftMagnitude = (drift: string): number | undefined => {
   return Number(match[1]);
 };
 
-const classifyTimelineEvent = (event: string): TimelineEventType => {
-  const normalized = event.toLowerCase();
-
-  if (/recover|restored|stabilized|returned to nominal/.test(normalized)) {
-    return 'Recovery';
-  }
-  if (/ground|do not deploy|investigation|isolate|inspect|notified|lockdown/.test(normalized)) {
-    return 'Action';
-  }
-  if (/critical|escalat|flagged|degraded|enhanced monitoring|exceeds/.test(normalized)) {
-    return 'Escalation';
-  }
-  if (/first detected|detected|identified|anomaly/.test(normalized)) {
-    return 'Detection';
-  }
-
-  return 'System';
-};
-
 const shiftTimeLabel = (timeLabel: string, minuteOffset: number): string => {
   const match = timeLabel.match(/^(\d{2}):(\d{2})(?::(\d{2}))?$/);
   if (!match) {
@@ -210,14 +190,6 @@ const statusToneClasses: Record<RowSeverity, string> = {
   normal: 'bg-status-normal/15 text-status-normal border-status-normal/30',
   watch: 'bg-status-warning/15 text-status-warning border-status-warning/30',
   critical: 'bg-status-critical/15 text-status-critical border-status-critical/30',
-};
-
-const timelineTypeToneClasses: Record<TimelineEventType, string> = {
-  Detection: 'bg-primary/15 text-primary border-primary/30',
-  Escalation: 'bg-status-warning/15 text-status-warning border-status-warning/30',
-  Action: 'bg-status-critical/15 text-status-critical border-status-critical/30',
-  System: 'bg-muted text-muted-foreground border-border',
-  Recovery: 'bg-status-normal/15 text-status-normal border-status-normal/30',
 };
 
 const actionTierToneClasses: Record<ActionTier, string> = {
@@ -429,6 +401,64 @@ const buildEvidenceTitle = (metric: string): string => {
   return `${metric} deviation`;
 };
 
+const buildReasonEvidenceTitle = (reason: string, index: number): string => {
+  const normalized = reason.toLowerCase();
+
+  if (normalized.includes('no anomal') || normalized.includes('no anomaly')) {
+    return 'No anomaly escalation detected';
+  }
+  if (normalized.includes('vibration')) {
+    return 'Vibration profile remains nominal';
+  }
+  if (normalized.includes('baseline') || normalized.includes('normal operating') || normalized.includes('within expected')) {
+    return 'Baseline consistency confirmed';
+  }
+  if (normalized.includes('latency') || normalized.includes('packet loss') || normalized.includes('signal')) {
+    return 'Link quality remains stable';
+  }
+  if (normalized.includes('temperature') || normalized.includes('thermal') || normalized.includes('temp')) {
+    return 'Thermal behavior within tolerance';
+  }
+
+  return `Stability checkpoint ${index + 1}`;
+};
+
+const inferReasonSeverity = (reason: string, anomalyScore: number): RowSeverity => {
+  const normalized = reason.toLowerCase();
+  const riskPattern = /(critical|degrad|spike|drop|loss|mismatch|unauthor|alert|fault|exceed|unstable)/;
+  const nominalPattern = /(within|normal|nominal|consistent|stable|no anomal|no anomaly)/;
+
+  if (riskPattern.test(normalized)) {
+    return anomalyScore >= 0.85 ? 'critical' : 'watch';
+  }
+
+  if (nominalPattern.test(normalized)) {
+    return anomalyScore >= 0.75 ? 'watch' : 'normal';
+  }
+
+  return anomalyScore >= 0.7 ? 'watch' : 'normal';
+};
+
+const buildReasonImplication = (severity: RowSeverity, index: number): string => {
+  const normalImplications = [
+    'Maintain current monitoring cadence and confirm with the next telemetry cycle.',
+    'System remains inside baseline tolerance; continue routine observation.',
+    'No immediate corrective action required; keep passive trend tracking active.',
+  ];
+  const watchImplications = [
+    'Continue heightened monitoring to detect early drift before escalation.',
+    'Validate this trend against upcoming telemetry windows and operator inputs.',
+    'No immediate lockout required, but keep this metric in active watch state.',
+  ];
+
+  if (severity === 'critical') {
+    return 'Requires immediate verification and containment actions before deployment.';
+  }
+
+  const pool = severity === 'watch' ? watchImplications : normalImplications;
+  return pool[index % pool.length];
+};
+
 const appendSparkPoint = (series: number[], value: number): number[] => {
   const nextSeries = [...series, value];
   return nextSeries.length > 26 ? nextSeries.slice(nextSeries.length - 26) : nextSeries;
@@ -508,14 +538,6 @@ const buildInitialSparkHistory = (
     anomaly: buildSeedSeries(anomalyScore),
   };
 };
-
-const timelineHeartbeatEvents = [
-  'Telemetry heartbeat received',
-  'RPM stable within baseline',
-  'No anomaly escalation detected',
-  'Operator profile consistent',
-  'Thermal profile within expected range',
-];
 
 const MiniSparkline = ({ data, className = 'h-8' }: { data: number[]; className?: string }) => {
   if (data.length < 2) {
@@ -695,7 +717,6 @@ const VehicleDetail = () => {
   const [liveTelemetryRows, setLiveTelemetryRows] = useState(() => asset.telemetry.map(row => ({ ...row })));
   const [liveAnomalyScore, setLiveAnomalyScore] = useState(asset.anomalyScore);
   const [flashingMetrics, setFlashingMetrics] = useState<Record<string, boolean>>({});
-  const [liveTimeline, setLiveTimeline] = useState(() => [...asset.timeline]);
   const [lastSignalAt, setLastSignalAt] = useState(formatEventTime(new Date()));
   const [sparkMetricSelection, setSparkMetricSelection] = useState<SparkMetricSelection>(initialSparkSelection);
   const [sparkHistory, setSparkHistory] = useState<Record<SparkKey, number[]>>(() =>
@@ -719,11 +740,10 @@ const VehicleDetail = () => {
     setLiveTelemetryRows(freshRows);
     setLiveAnomalyScore(asset.anomalyScore);
     setFlashingMetrics({});
-    setLiveTimeline([...asset.timeline]);
     setLastSignalAt(formatEventTime(new Date()));
     setSparkMetricSelection(freshSparkSelection);
     setSparkHistory(buildInitialSparkHistory(freshRows, asset.anomalyScore, freshSparkSelection));
-  }, [asset.id, asset.anomalyScore, asset.telemetry, asset.timeline]);
+  }, [asset.id, asset.anomalyScore, asset.telemetry]);
 
   useEffect(() => {
     let disposed = false;
@@ -885,34 +905,6 @@ const VehicleDetail = () => {
     }));
   }, [liveTelemetryRows, liveAnomalyScore, sparkMetricSelection]);
 
-  useEffect(() => {
-    let disposed = false;
-    let timeoutId: ReturnType<typeof setTimeout> | undefined;
-
-    const pushTimelineEvent = () => {
-      if (disposed) {
-        return;
-      }
-
-      const nextEvent = timelineHeartbeatEvents[Math.floor(Math.random() * timelineHeartbeatEvents.length)];
-      setLiveTimeline(prev => {
-        const updated = [...prev, { time: formatEventTime(new Date()), event: nextEvent }];
-        return updated.slice(-20);
-      });
-
-      timeoutId = setTimeout(pushTimelineEvent, randomBetween(14000, 22000));
-    };
-
-    timeoutId = setTimeout(pushTimelineEvent, randomBetween(12000, 18000));
-
-    return () => {
-      disposed = true;
-      if (timeoutId) {
-        clearTimeout(timeoutId);
-      }
-    };
-  }, [asset.id]);
-
   const telemetryAssessments = useMemo<TelemetryAssessment[]>(() => {
     const severityOrder: Record<RowSeverity, number> = {
       critical: 0,
@@ -1055,26 +1047,34 @@ const VehicleDetail = () => {
     }
 
     if (rowsAsEvidence.length === 0) {
-      return asset.detectionReasons.slice(0, 3).map(reason => ({
-        title: 'Diagnostic correlation',
-        observation: reason,
-        implication: 'Monitor for escalation and validate against the next telemetry cycles.',
-        severity: 'watch' as RowSeverity,
-      }));
+      const uniqueReasons = Array.from(
+        new Set(asset.detectionReasons.map(reason => reason.trim()).filter(Boolean)),
+      ).slice(0, 3);
+
+      if (uniqueReasons.length === 0) {
+        return [
+          {
+            title: 'Baseline consistency confirmed',
+            observation: 'No material telemetry deviation from expected operating envelope.',
+            implication: 'Maintain current monitoring cadence and confirm with the next telemetry cycle.',
+            severity: 'normal' as RowSeverity,
+          },
+        ];
+      }
+
+      return uniqueReasons.map((reason, index) => {
+        const severity = inferReasonSeverity(reason, liveAnomalyScore);
+        return {
+          title: buildReasonEvidenceTitle(reason, index),
+          observation: reason,
+          implication: buildReasonImplication(severity, index),
+          severity,
+        };
+      });
     }
 
     return rowsAsEvidence.slice(0, 4);
   }, [asset.detectionReasons, liveAnomalyScore, telemetryAssessments]);
-
-  const typedTimelineEvents = useMemo(
-    () => liveTimeline.map(event => ({ ...event, type: classifyTimelineEvent(event.event) })),
-    [liveTimeline],
-  );
-
-  const timelineDisplayEvents = useMemo(
-    () => [...typedTimelineEvents].reverse(),
-    [typedTimelineEvents],
-  );
 
   const operationalActions = useMemo<Array<{ tier: ActionTier; action: string }>>(() => {
     if (asset.status === 'critical') {
@@ -1128,8 +1128,7 @@ const VehicleDetail = () => {
   }, [asset.status]);
 
   const lastStableSnapshot = useMemo(() => {
-    const firstIncident = liveTimeline.find(entry => classifyTimelineEvent(entry.event) !== 'System');
-    const stableTime = firstIncident ? shiftTimeLabel(firstIncident.time, -4) : shiftTimeLabel(lastSignalAt, -5);
+    const stableTime = shiftTimeLabel(lastSignalAt, -5);
     const stableSignalStrength =
       liveTelemetryRows.find(row => row.metric.toLowerCase().includes('signal strength'))?.baseline ?? 'N/A';
 
@@ -1140,7 +1139,7 @@ const VehicleDetail = () => {
       signalStrength: stableSignalStrength,
       operatorMatch,
     };
-  }, [asset.status, lastSignalAt, liveTelemetryRows, liveTimeline]);
+  }, [asset.status, lastSignalAt, liveTelemetryRows]);
 
   const runCopilotAnalysis = async () => {
     setCopilotLoading(true);
@@ -1166,7 +1165,6 @@ const VehicleDetail = () => {
           anomalyScore: liveAnomalyScore,
           anomalyLevel,
           telemetryAssessments,
-          timeline: timelineDisplayEvents.slice(0, 12),
           recommendedActions: operationalActions,
           operatorPrompt: copilotPrompt.trim(),
         }),
@@ -1377,6 +1375,57 @@ const VehicleDetail = () => {
     }
   };
 
+  const anomalyAnalysisCard = (
+    <div className="rounded-xl bg-card border border-border p-4 lg:h-[320px]">
+      <p className="text-[10px] uppercase tracking-[0.15em] text-muted-foreground font-semibold mb-2">Anomaly Analysis</p>
+      <div className="flex items-baseline gap-2 mb-1.5">
+        <span className="text-2xl font-bold font-mono">{liveAnomalyScore.toFixed(2)}</span>
+        <span className={`text-sm font-bold ${anomalyLevelColor}`}>{anomalyLevel}</span>
+      </div>
+      <div className="mb-2.5 rounded-md border border-border/70 bg-secondary/20 px-2.5 py-2">
+        <div className="flex items-center justify-between mb-1">
+          <p className="text-[10px] uppercase tracking-widest text-muted-foreground">Score Drivers</p>
+          <p className="text-[11px] text-muted-foreground">Confidence {anomalyBreakdown.confidence}%</p>
+        </div>
+        <div className="space-y-1.5">
+          {anomalyBreakdown.components.map(component => (
+            <div key={component.label} className="flex items-center justify-between text-xs">
+              <span className="text-muted-foreground">{component.label}</span>
+              <span className="font-mono text-secondary-foreground">{component.value.toFixed(2)}</span>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {possibleCauses.length > 0 && (
+        <div className="mb-2.5 rounded-md border border-status-warning/25 bg-status-warning/5 px-2.5 py-2">
+          <p className="text-[10px] uppercase tracking-widest text-status-warning mb-1.5 font-semibold">Possible Causes</p>
+          <div className="space-y-1">
+            {possibleCauses.map((cause, index) => (
+              <p key={index} className="text-xs text-secondary-foreground">• {cause}</p>
+            ))}
+          </div>
+        </div>
+      )}
+
+      <div className="w-full h-1.5 rounded-full bg-secondary overflow-hidden">
+        <div
+          className={`h-full rounded-full transition-all ${
+            liveAnomalyScore < 0.15 ? 'bg-status-normal' : liveAnomalyScore < 0.6 ? 'bg-status-warning' : 'bg-status-critical'
+          }`}
+          style={{ width: `${anomalyBarWidth}%` }}
+        />
+      </div>
+      <div className="mt-2 rounded-md border border-border/60 bg-secondary/20 px-2 py-1.5">
+        <div className="flex items-center justify-between mb-1">
+          <p className="text-[10px] uppercase tracking-widest text-muted-foreground">Recent Trend</p>
+          <p className="text-[10px] text-muted-foreground">Threshold 0.90</p>
+        </div>
+        <AnomalyTrendChart data={sparkHistory.anomaly} />
+      </div>
+    </div>
+  );
+
   return (
     <div className="min-h-screen bg-background overflow-x-hidden">
       <AppHeader />
@@ -1488,78 +1537,8 @@ const VehicleDetail = () => {
               </div>
             </div>
 
-            {/* Anomaly + Timeline */}
-            <div className="space-y-4">
-              <div className="rounded-xl bg-card border border-border p-4">
-                <p className="text-[10px] uppercase tracking-[0.15em] text-muted-foreground font-semibold mb-2">Anomaly Score</p>
-                <div className="flex items-baseline gap-2 mb-1.5">
-                  <span className="text-2xl font-bold font-mono">{liveAnomalyScore.toFixed(2)}</span>
-                  <span className={`text-sm font-bold ${anomalyLevelColor}`}>{anomalyLevel}</span>
-                </div>
-                <div className="mb-2.5 rounded-md border border-border/70 bg-secondary/20 px-2.5 py-2">
-                  <div className="flex items-center justify-between mb-1">
-                    <p className="text-[10px] uppercase tracking-widest text-muted-foreground">Score Drivers</p>
-                    <p className="text-[11px] text-muted-foreground">Confidence {anomalyBreakdown.confidence}%</p>
-                  </div>
-                  <div className="space-y-1.5">
-                    {anomalyBreakdown.components.map(component => (
-                      <div key={component.label} className="flex items-center justify-between text-xs">
-                        <span className="text-muted-foreground">{component.label}</span>
-                        <span className="font-mono text-secondary-foreground">{component.value.toFixed(2)}</span>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-
-                {possibleCauses.length > 0 && (
-                  <div className="mb-2.5 rounded-md border border-status-warning/25 bg-status-warning/5 px-2.5 py-2">
-                    <p className="text-[10px] uppercase tracking-widest text-status-warning mb-1.5 font-semibold">Possible Causes</p>
-                    <div className="space-y-1">
-                      {possibleCauses.map((cause, index) => (
-                        <p key={index} className="text-xs text-secondary-foreground">• {cause}</p>
-                      ))}
-                    </div>
-                  </div>
-                )}
-
-                <div className="w-full h-1.5 rounded-full bg-secondary overflow-hidden">
-                  <div
-                    className={`h-full rounded-full transition-all ${
-                      liveAnomalyScore < 0.15 ? 'bg-status-normal' : liveAnomalyScore < 0.6 ? 'bg-status-warning' : 'bg-status-critical'
-                    }`}
-                    style={{ width: `${anomalyBarWidth}%` }}
-                  />
-                </div>
-                <div className="mt-2 rounded-md border border-border/60 bg-secondary/20 px-2 py-1.5">
-                  <div className="flex items-center justify-between mb-1">
-                    <p className="text-[10px] uppercase tracking-widest text-muted-foreground">Recent Trend</p>
-                    <p className="text-[10px] text-muted-foreground">Threshold 0.90</p>
-                  </div>
-                  <AnomalyTrendChart data={sparkHistory.anomaly} />
-                </div>
-              </div>
-
-              <div className="rounded-xl bg-card border border-border p-4 sm:p-5 flex flex-col min-h-0 max-h-[430px] overflow-hidden">
-                <p className="text-[10px] uppercase tracking-[0.15em] text-muted-foreground font-semibold mb-4">Incident Timeline</p>
-                <div className="space-y-4 overflow-y-auto pr-1 pb-1 flex-1 min-h-0">
-                  {timelineDisplayEvents.map((event, i) => (
-                    <div key={i} className="flex items-start gap-3">
-                      <div className="flex flex-col items-center">
-                        <div className={`w-2.5 h-2.5 rounded-full border-2 ${i === 0 ? 'bg-primary/70 border-primary/40' : 'bg-muted-foreground/30 border-muted'}`} />
-                        {i < timelineDisplayEvents.length - 1 && <div className="w-px h-6 bg-border" />}
-                      </div>
-                      <div className="-mt-0.5">
-                        <span className={`inline-flex items-center px-2 py-0.5 rounded border text-[10px] font-bold uppercase tracking-wide mb-1 ${timelineTypeToneClasses[event.type]}`}>
-                          {event.type}
-                        </span>
-                        <p className="text-sm font-medium">{event.event}</p>
-                        <p className="text-xs text-muted-foreground font-mono">{event.time}</p>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </div>
+            {/* Anomaly Analysis */}
+            <div className="hidden lg:block">{anomalyAnalysisCard}</div>
           </div>
 
           {/* Right Column */}
@@ -1809,12 +1788,15 @@ const VehicleDetail = () => {
               </div>
             </div>
 
+            {/* Anomaly Analysis (Mobile/Tablet) */}
+            <div className="lg:hidden">{anomalyAnalysisCard}</div>
+
             {/* Telemetry Comparison */}
-            <div className="rounded-xl bg-card border border-border p-4 sm:p-5">
-              <p className="text-[10px] uppercase tracking-[0.15em] text-muted-foreground font-semibold mb-4">Telemetry Comparison</p>
-              <div className="overflow-x-auto -mx-1 px-1 sm:mx-0 sm:px-0">
+            <div className="rounded-xl bg-card border border-border p-4 sm:p-5 lg:h-[320px] flex flex-col">
+              <p className="text-[10px] uppercase tracking-[0.15em] text-muted-foreground font-semibold mb-4 shrink-0">Telemetry Comparison</p>
+              <div className="flex-1 min-h-0 overflow-auto -mx-1 px-1 sm:mx-0 sm:px-0 [scrollbar-width:thin] [scrollbar-color:hsl(var(--border))_transparent] [&::-webkit-scrollbar]:h-1.5 [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-border/80 hover:[&::-webkit-scrollbar-thumb]:bg-border">
                 <table className="w-full min-w-[820px]">
-                  <thead>
+                  <thead className="sticky top-0 bg-card z-10">
                     <tr className="text-[10px] uppercase tracking-widest text-muted-foreground">
                       <th className="text-left pb-3 font-semibold">Metric</th>
                       <th className="text-right pb-3 font-semibold">Baseline</th>

@@ -140,4 +140,10 @@ The app is configured for single-service Render deployment:
 ## Prototype Scope
 
 Telemetry is synthetic but intentionally constrained to realistic ranges and drift patterns.
-The prototype is designed to demonstrate monitoring workflow, anomaly reasoning, and action guidance under operational-style conditions.
+
+The prototype is designed to demonstrate:
+- Monitoring workflow
+- Anomaly reasoning
+- Action-oriented diagnostic guidance
+- Rapid operator triage support
+
